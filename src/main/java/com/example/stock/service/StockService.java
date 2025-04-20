@@ -14,8 +14,17 @@ public class StockService {
         this.stockRepository = stockRepository;
     }
 
-    @Transactional
-    public void decrease(Long id, Long quantity) {
+    /**
+     * @Transactional을 사용하면 StockService를 wrapping 한 클래스를 새로 만들어서 사용
+     * Tx 시작 -> 로직 실행 -> Tx 종료(DB 업데이트)
+     * ----------------------------------------------------------------------
+     * Tx의 종료 시점에 DB에 업데이트 하는데
+     * stock.decrease가 완료되고 실제 DB에 업데이트 되기 전에
+     * 다른 스레드가 stock.decrease 호출 가능
+     * -> 다른 스레드는 갱신 전 값을 가져가기 때문에 동시성 이슈 발생
+     */
+//    @Transactional
+    public synchronized void decrease(Long id, Long quantity) {
         // Stock 조회
         Stock stock = stockRepository.findById(id)
                 .orElseThrow();
